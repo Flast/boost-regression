@@ -38,6 +38,10 @@ bool re_match(const std::string& pattern, const std::string& text);
 int timestamp_difference(const boost::posix_time::ptime& x, const boost::posix_time::ptime& y);
 std::string format_timestamp(const boost::posix_time::ptime& timestamp);
 
+struct td_colspan_manip;
+html_writer& operator<<(html_writer& writer, td_colspan_manip manip);
+td_colspan_manip td_colspan(int colspan);
+
 std::string encode_path(const std::string& path);
 std::string escape_uri(const std::string& path); // escapes a URI path (leaves '/' alone)
 std::string escape_literal_uri(const std::string& path); // escapes all special characters in a URI

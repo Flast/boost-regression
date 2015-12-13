@@ -188,6 +188,23 @@ bool boost::regression::re_match(const std::string& pattern, const std::string& 
         pattern.substr(pattern_start, tail_size) == text.substr(text.size() - tail_size, tail_size);
 }
 
+struct boost::regression::td_colspan_manip
+{
+    int colspan;
+};
+
+html_writer& boost::regression::operator<<(html_writer& writer, td_colspan_manip manip)
+{
+    if(manip.colspan != 1) writer << " colspan=\"" << manip.colspan << "\"";
+    return writer;
+}
+
+td_colspan_manip boost::regression::td_colspan(int colspan)
+{
+    td_colspan_manip manip = {colspan};
+    return manip;
+};
+
 // date-time
 
 // The result is clamped to the range [0,30]
@@ -548,32 +565,32 @@ void boost::regression::insert_runners_rows(html_writer& document,
                                             const std::string& top_or_bottom,
                                             const test_structure_t& test_structure,
                                             const boost::posix_time::ptime& run_date) {
-    std::string colspan = (mode == "summary") ? "1" : "2";
+    td_colspan_manip colspan = td_colspan((mode == "summary") ? 1 : 2);
 
     if(top_or_bottom == "top") {
-        document << "<tr>\n"
-                    "    <td colspan=\"" << colspan << "\">&#160;</td>\n";
+        document << "<tr class=\"runner\">\n"
+                    "    <td" << colspan << "/>\n";
         BOOST_FOREACH(test_structure_t::platform_group_t::const_reference platform, test_structure.platforms) {
             std::size_t count = 0;
             BOOST_FOREACH(test_structure_t::platform_t::const_reference run, platform.second) {
                 count += run.toolsets.size();
             }
             if(count > 0) {
-                document << "    <td colspan=\"" << count << "\" class=\"runner\">\n"
+                document << "    <td" << td_colspan(count) << " class=\"runner\">\n"
                             "        " << escape_xml(platform.first) << "\n"
                             "    </td>\n";
             }
         }
-        document << "    <td colspan=\"" << colspan << "\">&#160;</td>\n"
+        document << "    <td" << colspan << "/>\n"
                     "</tr>\n";
     }
 
     document << "<tr>\n"
-                "    <td colspan=\"" << colspan << "\">&#160;</td>\n";
+                "    <td" << colspan << "/>\n";
     BOOST_FOREACH(test_structure_t::platform_group_t::const_reference platform, test_structure.platforms) {
         BOOST_FOREACH(test_structure_t::platform_t::const_reference run, platform.second) {
             if(run.toolsets.size() > 0) {
-                document << "    <td colspan=\"" << run.toolsets.size() << "\" class=\"runner\">\n"
+                document << "    <td" << td_colspan(run.toolsets.size()) << " class=\"runner\">\n"
                             "        <a href=\"../" << escape_uri(encode_path(run.runner)) << ".html\">\n"
                             "            " << escape_xml(run.runner) << "\n"
                             "        </a>\n"
@@ -581,30 +598,30 @@ void boost::regression::insert_runners_rows(html_writer& document,
             }
         }
     }
-    document << "    <td colspan=\"" << colspan << "\">&#160;</td>\n"
+    document << "    <td" << colspan << "/>\n"
                 "</tr>\n";
 
     document << "<tr>\n"
-                "<td colspan=\"" << colspan << "\">&#160;</td>\n";
+                "    <td" << colspan << "/>\n";
     BOOST_FOREACH(test_structure_t::platform_group_t::const_reference platform, test_structure.platforms) {
         BOOST_FOREACH(test_structure_t::platform_t::const_reference run, platform.second) {
             if(run.toolsets.size() > 0) {
-                document << "    <td colspan=\"" << run.toolsets.size() << "\" class=\"revision\">\n"
+                document << "    <td" << td_colspan(run.toolsets.size()) << " class=\"revision\">\n"
                             "         rev " << run.revision.substr(0, 6) << "\n"
                             "    </td>\n";
             }
         }
     }
-    document << "    <td colspan=\"" << colspan << "\">&#160;</td>\n"
+    document << "    <td" << colspan << "/>\n"
                 "</tr>\n";
     
     document << "<tr>\n"
-                "    <td colspan=\"" << colspan << "\">&#160;</td>\n";
+                "    <td" << colspan << "/>\n";
     BOOST_FOREACH(test_structure_t::platform_group_t::const_reference platform, test_structure.platforms) {
         BOOST_FOREACH(test_structure_t::platform_t::const_reference run, platform.second) {
             if(run.toolsets.size() > 0) {
                 int age = timestamp_difference(run.timestamp, run_date);
-                document << "    <td colspan=\"" << run.toolsets.size() << "\" class=\"timestamp\">\n"
+                document << "    <td" << td_colspan(run.toolsets.size()) << " class=\"timestamp\">\n"
                             "        <span class=\"timestamp-" << age << "\">" << format_timestamp(run.timestamp) << "</span>";
                 if(run.run_type != "full") {
                     document << "<span class=\"run-type-" << run.run_type << "\">" << run.run_type[0] << "</span>\n";
@@ -613,24 +630,24 @@ void boost::regression::insert_runners_rows(html_writer& document,
             }
         }
     }
-    document << "    <td colspan=\"" << colspan << "\">&#160;</td>\n"
+    document << "    <td" << colspan << "/>\n"
                 "</tr>\n";
 
     if(top_or_bottom == "bottom") {
         document << "<tr>\n"
-                    "    <td colspan=\"" << colspan << "\">&#160;</td>\n";
+                    "    <td" << colspan << "/>\n";
         BOOST_FOREACH(test_structure_t::platform_group_t::const_reference platform, test_structure.platforms) {
             std::size_t count = 0;
             BOOST_FOREACH(test_structure_t::platform_t::const_reference run, platform.second) {
                 count += run.toolsets.size();
             }
             if(count > 0) {
-                document << "    <td colspan=\"" << count << "\" class=\"runner\">\n"
+                document << "    <td" << td_colspan(count) << " class=\"runner\">\n"
                             "        " << escape_xml(platform.first) << "\n"
                             "    </td>\n";
             }
         }
-        document << "    <td colspan=\"" << colspan << "\">&#160;</td>\n"
+        document << "    <td" << colspan << "/>\n"
                     "</tr>\n";
     }
 }
@@ -646,12 +663,12 @@ void boost::regression::insert_toolsets_row(html_writer& document,
 
     document << "<tr valign=\"middle\">\n";
 
-    std::string colspan = (mode == "summary") ? "1" : "2";
+    td_colspan_manip colspan = td_colspan((mode == "summary") ? 1 : 2);
     std::string title = (mode == "summary") ?
         "&#160;library&#160;/&#160;toolset&#160;" :
         "&#160;test&#160;/&#160;toolset&#160;";
               
-    document << "    <td class=\"head\" colspan=\"" << colspan << "\" width=\"1%\">" << title << "</td>\n";
+    document << "    <td class=\"head\"" << colspan << " width=\"1%\">" << title << "</td>\n";
     BOOST_FOREACH(const test_structure_t::platform_group_t::const_reference platform, test_structure.platforms) {
         BOOST_FOREACH(const test_structure_t::platform_t::const_reference run, platform.second) {
             BOOST_FOREACH(const test_structure_t::toolset_group_t::const_reference toolset, run.toolsets) {
